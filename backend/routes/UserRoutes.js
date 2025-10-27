@@ -39,7 +39,7 @@ router.post('/user/register', async (req, res) => {
 router.post('/UserLogin', async (req, res) => {
   const { email, password } = req.body;
   console.log(email, password);
-  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('NODE_ENV:', process.env.RAILWAY_ENVIRONMENT_NAME);
   try {
     const user = await UserModel.findOne({ email });
     if (!user) {
@@ -55,9 +55,9 @@ router.post('/UserLogin', async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       maxAge: 3600000, // 1 hour
-      secure: process.env.NODE_ENV === 'production', // true trên Railway
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' cho cross-origin
-      domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
+      secure: process.env.RAILWAY_ENVIRONMENT_NAME === 'production', // true trên Railway
+      sameSite: process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? 'none' : 'lax', // 'none' cho cross-origin
+      domain: process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? undefined : 'localhost'
     }); // 1 hour in milliseconds
 
     return res.json({ status: true, message: "Login successful" });
