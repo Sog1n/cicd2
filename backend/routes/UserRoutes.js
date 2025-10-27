@@ -24,7 +24,7 @@ router.post('/user/register', async (req, res) => {
       password: hashedPassword,
       phone,
       email,
-      
+
     });
 
     await user.save();
@@ -39,6 +39,7 @@ router.post('/user/register', async (req, res) => {
 router.post('/UserLogin', async (req, res) => {
   const { email, password } = req.body;
   console.log(email, password);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
   try {
     const user = await UserModel.findOne({ email });
     if (!user) {
@@ -56,7 +57,7 @@ router.post('/UserLogin', async (req, res) => {
       maxAge: 3600000, // 1 hour
       secure: process.env.NODE_ENV === 'production', // true trên Railway
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' cho cross-origin
-      // domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
+      domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
     }); // 1 hour in milliseconds
 
     return res.json({ status: true, message: "Login successful" });
@@ -96,7 +97,7 @@ We received a request to reset your FoodieBuddy password. If you made this reque
 
 If you didn't request a password reset, please ignore this email or let us know.
 
-http://localhost:5173/UserResetPassword/${token}
+https://cicd-ashen.vercel.app/UserResetPassword/${token}
 
 Thank you for being a part of the FoodieBuddy community!
 
@@ -145,14 +146,14 @@ export const AuthenticateUser = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
-    
+
     const verifyToken = jwt.verify(token, process.env.KEY);
     const rootUser = await UserModel.findOne({ _id: verifyToken.id });
-    
+
     if (!rootUser) {
       return res.status(401).json({ message: 'Unauthorized: User not found' });
     }
-    
+
     req.token = token;
     req.rootUser = rootUser;
     req.UserId = rootUser._id;
@@ -163,10 +164,14 @@ export const AuthenticateUser = async (req, res, next) => {
   }
 }
 //Logout
-router.get('/UserLogout',(req,res)=>{
-  res.clearCookie('token')
-  return res.json({status: true})
-})
+router.get('/UserLogout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  });
+  return res.json({ status: true });
+});
 
 //Dashboard
 router.get('/UsersRestaurant', AuthenticateUser, async (req, res) => {
@@ -184,10 +189,10 @@ router.get('/UsersRestaurant', AuthenticateUser, async (req, res) => {
 // Fetch User and Restaurant Menu Data
 router.get('/ResMenu', async (req, res) => {
   console.log(req.rootUser); // this was returning undefined
-  
+
   try {
     const user = req.rootUser;
-    
+
     const restaurant = await RestaurantModel.findOne({ _id: user.ownerId }).populate('menu');
     if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
 
