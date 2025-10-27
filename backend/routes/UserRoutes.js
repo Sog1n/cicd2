@@ -56,7 +56,7 @@ router.post('/UserLogin', async (req, res) => {
       maxAge: 3600000, // 1 hour
       secure: process.env.NODE_ENV === 'production', // true trên Railway
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' cho cross-origin
-      domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
+      // domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
     }); // 1 hour in milliseconds
 
     return res.json({ status: true, message: "Login successful" });
