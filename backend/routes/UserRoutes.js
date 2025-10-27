@@ -51,7 +51,13 @@ router.post('/UserLogin', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.KEY, { expiresIn: "1h" });
-    res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // 1 hour in milliseconds
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 3600000, // 1 hour
+      secure: process.env.NODE_ENV === 'production', // true trên Railway
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' cho cross-origin
+      domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
+    }); // 1 hour in milliseconds
 
     return res.json({ status: true, message: "Login successful" });
   } catch (err) {
@@ -157,10 +163,14 @@ export const AuthenticateUser = async (req, res, next) => {
   }
 }
 //Logout
-router.get('/UserLogout',(req,res)=>{
-  res.clearCookie('token')
-  return res.json({status: true})
-})
+router.get('/UserLogout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  });
+  return res.json({ status: true });
+});
 
 //Dashboard
 router.get('/UsersRestaurant', AuthenticateUser, async (req, res) => {
