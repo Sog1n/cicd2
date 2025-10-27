@@ -167,8 +167,8 @@ export const AuthenticateUser = async (req, res, next) => {
 router.get('/UserLogout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    secure: process.env.RAILWAY_ENVIRONMENT_NAME === 'production',
+    sameSite: process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? 'none' : 'lax'
   });
   return res.json({ status: true });
 });

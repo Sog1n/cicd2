@@ -55,7 +55,13 @@ router.post('/ResLogin', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.KEY, { expiresIn: "1h" });
-    res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // 1 hour in milliseconds
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 3600000, // 1 hour
+      secure: process.env.RAILWAY_ENVIRONMENT_NAME === 'production', // true trên Railway
+      sameSite: process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? 'none' : 'lax', // 'none' cho cross-origin
+      domain: process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? undefined : 'localhost'
+    }); // 1 hour in milliseconds
 
     return res.json({ status: true, message: "Login successful" });
   } catch (err) {
@@ -165,10 +171,13 @@ export const Authenticate = async (req, res, next) => {
 
 
 router.get('/logout',(req,res)=>{
-  res.clearCookie('token')
-  return res.json({status: true})
-})
-
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.RAILWAY_ENVIRONMENT_NAME === 'production',
+    sameSite: process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? 'none' : 'lax'
+  });
+  return res.json({ status: true });
+});
 //Dashboard
 router.get('/RestaurantLayout/ResDashBoard', Authenticate, (req, res) => {
   res.json(req.rootResUser); // Send the user data as JSON
