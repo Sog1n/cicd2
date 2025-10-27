@@ -3,7 +3,7 @@ import { SiGreasyfork } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
 import Axios from "axios";
 import Footer from "../HomePageCompo/Footer";
-
+const API_URL = import.meta.env.VITE_API_URL;
 const UserLogin = () => {
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ const UserLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await Axios.post("http://localhost:3000/auth/UserLogin", {
+      const response = await Axios.post(`${import.meta.env.VITE_API_URL}/auth/UserLogin`, {
         email,
         password,
       });
